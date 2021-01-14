@@ -1,9 +1,23 @@
-FROM ruby:2.5.3
+FROM ruby:2.6.5-alpine3.11
 
-WORKDIR /app
-ADD Gemfile* /app/
+ENV APP_ROOT /app
 
-RUN bundle install -j3
+WORKDIR $APP_ROOT
+
+ADD Gemfile* ./
+
+RUN \
+  apk update && apk upgrade && \
+  apk --no-cache add \
+    make \
+    g++ \
+    musl-dev \
+    libstdc++ \
+    sqlite-dev
+
+RUN gem update --system && \
+    gem install bundler && \
+    bundle install
 
 EXPOSE 1080 1025
 CMD ["mailcatcher", "--smtp-ip=0.0.0.0", "--http-ip=0.0.0.0", "--foreground"]
